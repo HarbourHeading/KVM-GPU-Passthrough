@@ -221,7 +221,7 @@ Change:
  to
  
 ```xml
-<on_reboot>restart</on_reboot>`
+<on_reboot>restart</on_reboot>
 ```
 
 After installation, you can unmount the Windows.iso and virtio.iso by editing the VM configuration with `virsh edit <guestname>` and removing:

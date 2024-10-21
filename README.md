@@ -5,19 +5,20 @@ This guide explains how to set up a headless Windows 10 VM on QEMU/KVM with full
 **Note:** This guide isolates the GPU from the Ubuntu host for security reasons. If you don't want to do this, you can skip that part. However, it is strongly recommended.
 
 ## Table of Contents
-1. [Prerequisites](#prerequisites)
+- [Prerequisites](#prerequisites)
    - [Is Virtualization Supported?](#is-virtualization-supported)
-2. [Install Windows ISO](#install-windows-iso)
-3. [Install Virtio Drivers](#install-virtio-drivers)
-4. [Install Required Packages](#install-required-packages)
-5. [Set up the GPU](#set-up-the-gpu)
-6. [Isolate the GPU](#isolate-the-gpu)
-7. [Launch and Configure the KVM](#launch-and-configure-the-kvm)
-8. [Install Drivers in the KVM](#install-drivers-in-the-kvm)
-9. [Set up Remote Desktop (Optional)](#set-up-remote-desktop-optional)
-10. [Tips](#tips)
-11. [Troubleshooting](#troubleshooting)
-12. [Additional Resources](#additional-resources)
+- [Installation](#installation)
+   - [Install Windows ISO](#install-windows-iso)
+   - [Install Virtio Drivers](#install-virtio-drivers)
+   - [Install Required Packages](#install-required-packages)
+   - [Set up the GPU](#set-up-the-gpu)
+   - [Isolate the GPU](#isolate-the-gpu)
+   - [Launch and Configure the KVM](#launch-and-configure-the-kvm)
+   - [Install Drivers in the KVM](#install-drivers-in-the-kvm)
+   - [Set up Remote Desktop (Optional)](#set-up-remote-desktop-optional)
+- [Tips](#tips)
+- [Troubleshooting](#troubleshooting)
+- [Additional Resources](#additional-resources)
 
 ## Prerequisites
 
@@ -31,6 +32,8 @@ Virtualization: AMD-V  # AMD
 ```
 
 Then, run `egrep -c '(vmx|svm)' /proc/cpuinfo`. If the output is greater than 0, virtualization is supported.
+
+## Installation
 
 ### Install Windows ISO
 

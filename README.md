@@ -17,6 +17,8 @@ This guide explains how to set up a headless Windows 10 VM on QEMU/KVM with full
    - [Install Drivers in the KVM](#install-drivers-in-the-kvm)
    - [Set up Remote Desktop (Optional)](#set-up-remote-desktop-optional)
 - [Tips](#tips)
+   - [Unmount installation disks](unmount-installation-disks)
+   - [Set reboot signal to restart](set-reboot-signal-to-restart)
 - [Troubleshooting](#troubleshooting)
 - [Additional Resources](#additional-resources)
 
@@ -209,23 +211,7 @@ Some of the options above provide fallback virtual displays, but if it does not 
 
 ### Tips
 
-By default, on restart/reboot of the VM it destroys itself (shuts down until powered up again). To change this, do:  
-
-```
-virsh edit <guestname>
-```
-
-Change:
- 
-```xml
-<on_reboot>destroy</on_reboot>
-```
-
- to
- 
-```xml
-<on_reboot>restart</on_reboot>
-```
+#### Unmount installation disks
 
 After installation, you can unmount the Windows.iso and virtio.iso by editing the VM configuration with `virsh edit <guestname>` and removing:
 
@@ -248,18 +234,35 @@ After installation, you can unmount the Windows.iso and virtio.iso by editing th
 
  Do not delete the mounted main disk, only the 2 mounted isos. If you do,  mount it again with `virsh attach-disk <guestname> /dev/cdrom /media/cdrom`.
 
+#### Set reboot signal to restart
+
+By default, on restart/reboot of the VM it destroys itself (shuts down until powered up again). To change this, do:  
+
+```
+virsh edit <guestname>
+```
+
+Change:
+ 
+```xml
+<on_reboot>destroy</on_reboot>
+```
+
+ to
+ 
+```xml
+<on_reboot>restart</on_reboot>
+```
+
 ### Troubleshooting
 
-**Q: VM not running?**
+**Q: VM not running?**<br>
+A: Check if libvirtd is running: `sudo systemctl status libvirtd`. Look for any errors in logs if not.
 
-A: Check if libvirtd is running: `sudo systemctl status libvirtd` and look for any errors if not. 
-
-**Q: Nvidia GPU not isolated?**
-
+**Q: Nvidia GPU not isolated?**<br>
 A: Try adding `softdep nvidia pre: vfio-pci` under the options line in `/etc/modprobe.d/vfio.conf`.
 
-**Q: Windows VM shows only 1 logical processor being used?**
-
+**Q: Windows VM shows only 1 logical processor being used?**<br>
 A: You may need to manually specify the cores in the VM configuration. To do so, do the following:
      Enter your server CLI. Turn off the VM before editing it with `virsh destroy <name>`.
      Then, edit it with `virsh edit name>` to include:
@@ -283,8 +286,7 @@ A: You may need to manually specify the cores in the VM configuration. To do so,
  
 The above configuration specifies 8 cores. Change it as needed.
  
-**Q: I get "error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>"**
-
+**Q: I get error: `error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>`**<br>
 A: Another KVM is using the GPU already. verify currently running KVMs with `virsh list --all`. To shutdown a KVM, use `virsh destroy <guestname>` and to remove it entirely use `virsh undefine <guestname>`.
 
 ## Additional Resources

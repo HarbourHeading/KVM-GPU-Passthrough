@@ -1,30 +1,31 @@
 # Create KVM with Full GPU and CPU Passthrough
 
-This guide explains how to set up a headless Windows 10 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. There are few tutorials on this, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users.
+This guide explains how to set up a headless Windows 10 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. I did not find many guides on the topic, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users. Although it has only been tested on Ubuntu Server 24.04, the steps should remain largely the same for older versions.
 
-**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. If you don't want to do this, you can skip that part. However, it is strongly recommended.
+**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended for security reasons.
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
-   - [Is Virtualization Supported?](#is-virtualization-supported)
+   - [Is virtualization supported?](#is-virtualization-supported)
 - [Installation](#installation)
-   - [Install Windows ISO](#install-windows-iso)
-   - [Install Virtio Drivers](#install-virtio-drivers)
-   - [Install Required Packages](#install-required-packages)
+   - [Install windows ISO](#install-windows-iso)
+   - [Install virtio Drivers](#install-virtio-drivers)
+   - [Install required packages](#install-required-packages)
+- [Getting Started](#getting-started)
    - [Set up the GPU](#set-up-the-gpu)
    - [Isolate the GPU](#isolate-the-gpu)
-   - [Launch and Configure the KVM](#launch-and-configure-the-kvm)
-   - [Install Drivers in the KVM](#install-drivers-in-the-kvm)
-   - [Set up Remote Desktop (Optional)](#set-up-remote-desktop-optional)
+   - [Launch and configure the KVM](#launch-and-configure-the-kvm)
+   - [Install drivers in the KVM](#install-drivers-in-the-kvm)
+   - [Set up remote desktop (optional)](#set-up-remote-desktop-optional)
 - [Tips](#tips)
    - [Unmount installation disks](unmount-installation-disks)
    - [Set reboot signal to restart](set-reboot-signal-to-restart)
 - [Troubleshooting](#troubleshooting)
-- [Additional Resources](#additional-resources)
+- [Additional resources](#additional-resources)
 
 ## Prerequisites
 
-### Is Virtualization Supported?
+### Is virtualization supported?
  
 Run `lscpu | grep "Virtualization"` to check if virtualization is supported. You should see:
 
@@ -37,11 +38,11 @@ Then, run `egrep -c '(vmx|svm)' /proc/cpuinfo`. If the output is greater than 0,
 
 ## Installation
 
-### Install Windows ISO
+### Install windows ISO
 
 Download `Windows.iso` on an installation media (e.g. USB) from the [Microsoft website](https://www.microsoft.com/en-us/software-download/windows10). You can either copy the ISO to your server using scp or download it directly via CLI using [Fido](https://github.com/pbatard/Fido).
 
-### Install Virtio drivers  
+### Install virtio drivers  
   
 Download the `virtio-win ISO` from the [virtio repository](https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md). 
 
@@ -64,6 +65,8 @@ sudo usermod -aG libvirt $USER
 ```
 
 Relog for the group change to take effect.
+
+## Getting started
 
 ### Set up the GPU
 
@@ -141,7 +144,7 @@ lspci -k | grep -E "vfio-pci|INTEL"
 
 Kernel driver in use should now be listed as: `vfio-pci`. If not, you may need to blacklist the other kernel drivers.
 
-### Launch and Configure the KVM
+### Launch and configure the KVM
 
 We will setup and install the VM with virt-install. Tweak the example below:
 ```
@@ -172,7 +175,7 @@ spice://<server-ip>:5900
 spice://localhost:5900    # If the server has a GUI, it can connect to the installer from the same machine
 ```
 
-If you are making a remote connection, you will need to temporarily configure the KVM to listen for connections from elsewhere. run `virsh edit <name>` and change:
+If you are making a remote connection, you will need to temporarily configure the KVM to listen for connections from elsewhere. run `virsh edit <guestname>` and change:
 
 ```
     <graphics type='spice' autoport='yes'>
@@ -203,9 +206,9 @@ Install your graphics card drivers: [Nvidia](https://www.nvidia.com/en-us/geforc
 
 Verify successful install by using task manager > performance and see your GPU listed. Alternatively check device manager.
 
-### Set up Remote Desktop (Optional)
+### Set up remote desktop (optional)
 
-If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight-qt](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/).
+If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/).
 
 Some of the options above provide fallback virtual displays, but if it does not work out of the box, I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver).
 
@@ -262,10 +265,10 @@ A: Check if libvirtd is running: `sudo systemctl status libvirtd`. Look for any 
 **Q: Nvidia GPU not isolated?**<br>
 A: Try adding `softdep nvidia pre: vfio-pci` under the options line in `/etc/modprobe.d/vfio.conf`.
 
-**Q: Windows VM shows only 1 logical processor being used?**<br>
+**Q: Windows VM only showing 1 logical processor being used?**<br>
 A: You may need to manually specify the cores in the VM configuration. To do so, do the following:
-     Enter your server CLI. Turn off the VM before editing it with `virsh destroy <name>`.
-     Then, edit it with `virsh edit name>` to include:
+     Enter your server CLI. Turn off the VM before editing it with `virsh destroy <guestname>`.
+     Then, edit it with `virsh edit guestname>` to include:
      
 ```xml
   <vcpu placement='static'>8</vcpu>
@@ -289,8 +292,8 @@ The above configuration specifies 8 cores. Change it as needed.
 **Q: I get error: `error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>`**<br>
 A: Another KVM is using the GPU already. verify currently running KVMs with `virsh list --all`. To shutdown a KVM, use `virsh destroy <guestname>` and to remove it entirely use `virsh undefine <guestname>`.
 
-## Additional Resources
+## Additional resources
 
-- [Libvirt Documentation](https://ubuntu.com/server/docs/libvirt)
-- [Looking-glass installation](https://looking-glass.io/docs/B6/install/)
+- [Libvirt documentation](https://ubuntu.com/server/docs/libvirt)
+- [Looking Glass installation](https://looking-glass.io/docs/B6/install/)
 - [KVM installation in Ubuntu 22.04 GUI](https://www.youtube.com/watch?v=vyLNpPY-Je0)

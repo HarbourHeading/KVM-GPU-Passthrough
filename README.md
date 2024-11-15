@@ -168,7 +168,7 @@ sudo virt-install \
 --wait -1
 ```
 
-Use a remote [Spice viewer](https://www.spice-space.org/download.htm) with the command:
+Use a remote [Spice viewer](https://www.spice-space.org/download.html) with the command:
 
 ```
 spice://<server-ip>:5900

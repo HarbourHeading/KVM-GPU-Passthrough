@@ -210,7 +210,7 @@ Verify successful install by using task manager > performance and see your GPU l
 
 If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/).
 
-Some of the options above provide fallback virtual displays, but if it does not work out of the box, I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver).
+Some of the options above provide fallback virtual displays, but if it does not work out of the box I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver).
 
 ### Tips
 
@@ -297,3 +297,7 @@ A: Another KVM is using the GPU already. verify currently running KVMs with `vir
 - [Libvirt documentation](https://ubuntu.com/server/docs/libvirt)
 - [Looking Glass installation](https://looking-glass.io/docs/B6/install/)
 - [KVM installation in Ubuntu 22.04 GUI](https://www.youtube.com/watch?v=vyLNpPY-Je0)
+
+## Contributions
+
+FedericoSlongo (fix broken links).

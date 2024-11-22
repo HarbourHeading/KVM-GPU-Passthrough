@@ -268,7 +268,7 @@ A: Try adding `softdep nvidia pre: vfio-pci` under the options line in `/etc/mod
 **Q: Windows VM only showing 1 logical processor being used?**<br>
 A: You may need to manually specify the cores in the VM configuration. To do so, do the following:
      Enter your server CLI. Turn off the VM before editing it with `virsh destroy <guestname>`.
-     Then, edit it with `virsh edit guestname>` to include:
+     Then, edit it with `virsh edit <guestname>` to include:
      
 ```xml
   <vcpu placement='static'>8</vcpu>

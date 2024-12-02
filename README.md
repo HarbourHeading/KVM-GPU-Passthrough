@@ -1,8 +1,8 @@
 # Create KVM with Full GPU and CPU Passthrough
 
-This guide explains how to set up a headless Windows 10 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. I did not find many guides on the topic, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users. Although it has only been tested on Ubuntu Server 24.04, the steps should remain largely the same for older versions.
+This guide explains how to set up a headless Windows 10 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. I did not find many guides on the topic, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users. Although it has only been tested on Ubuntu Server 24.04, the steps should remain largely the same for older versions, e.g. 22.04 and 20.04.
 
-**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended for security reasons.
+**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended.
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
@@ -146,7 +146,7 @@ Kernel driver in use should now be listed as: `vfio-pci`. If not, you may need t
 
 ### Launch and configure the KVM
 
-We will setup and install the VM with virt-install. Tweak the example below:
+We will setup and install the VM with virt-install. Tweak the example below as needed:
 ```
 sudo virt-install \
 --name=Windows10 \
@@ -193,7 +193,7 @@ to
     </graphics>
 ```
 
-After the installation and another P2P or Viewer has been set up, it can be changed back to not listen for connections outside of localhost.
+After the installation and another P2P or Remote Viewer has been set up, it can be changed back to not listen for connections outside of localhost.
 
 ### Install drivers in the KVM
 
@@ -208,7 +208,7 @@ Verify successful install by using task manager > performance and see your GPU l
 
 ### Set up remote desktop (optional)
 
-If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/).
+If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/). Setup guides for each one will not be covered here, but can be found on their respective websites. Applications may need to be installed as machine instead of user to allow connections from the login screen.
 
 Some of the options above provide fallback virtual displays, but if it does not work out of the box I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver).
 

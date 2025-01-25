@@ -193,7 +193,7 @@ to
     </graphics>
 ```
 
-After the installation and another P2P or Remote Viewer has been set up, it can be changed back to not listen for connections outside of localhost.
+After the installation and another P2P or Remote Viewer has been set up, it can be changed back to not listen for connections outside of localhost. 
 
 ### Install drivers in the KVM
 
@@ -289,8 +289,14 @@ A: You may need to manually specify the cores in the VM configuration. To do so,
  
 The above configuration specifies 8 cores. Change it as needed.
  
-**Q: I get error: `error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>`**<br>
+**Q: How do I fix error: `error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>`?**<br>
 A: Another KVM is using the GPU already. verify currently running KVMs with `virsh list --all`. To shutdown a KVM, use `virsh destroy <guestname>` and to remove it entirely use `virsh undefine <guestname>`.
+
+**Q: Why is the screen completely black when connecting with spice viewer but not with *x* remote viewer, or vice versa?**<br>
+A: Spice viewer (or your chosen remote viewer) may not recognise the virtual display, and therefore display a black screen instead. To circumvent this, when connecting and seeing the black screen, switch to the project windows menu `Windows key + P` and use arrow key down and press enter until the display appears. On parsec for example, you may want to switch projection type to *second screen only* (see why on question below) even if *PC screen only* is required for spice viewer to display the screen, as it does not recognise the virtual display driver.
+
+**Q: Even with the virtual display installed, the remote view refresh rate only appears to be 1 hz?**"<br>
+A: You may not have set the projection `Windows key + P` to *second screen only*, making parsec use the basic display instead. In parsec, even if you have specified another hardware encoding type, you also get a warning of "host is using software encoding" when the basic display is used.
 
 ## Additional resources
 

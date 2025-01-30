@@ -187,7 +187,7 @@ If you are making a remote connection, you will need to temporarily configure th
 to
 
 ```
-    <graphics type='spice' autoport='yes' listen='0.0.0.0'>
+    <graphics type='spice' autoport='yes' listen='0.0.0.0' passwd='securePassword1!'>
       <listen type='address' address='0.0.0.0'/>
       <image compression='off'/>
     </graphics>

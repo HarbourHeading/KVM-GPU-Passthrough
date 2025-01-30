@@ -1,8 +1,8 @@
 # Create KVM with Full GPU and CPU Passthrough
 
-This guide explains how to set up a headless Windows 10 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. I did not find many guides on the topic, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users. Although it has only been tested on Ubuntu Server 24.04, the steps should remain largely the same for older versions, e.g. 22.04 and 20.04.
+This guide explains how to set up a headless Windows 10/11 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. I did not find many guides on the topic, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users. Although it has only been tested on Ubuntu Server 24.04, the steps should remain largely the same for older versions, e.g. 22.04 and 20.04.
 
-**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended.
+**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended. Guide was originally made for Windows 10, but can be performed with minimal changes (difference being the iso) in Windows 11. For clarity, tools like spice viewer is referred to as a remote viewer, while apps like parsec and looking glass are referred to as remote desktops.
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
@@ -40,7 +40,7 @@ Then, run `egrep -c '(vmx|svm)' /proc/cpuinfo`. If the output is greater than 0,
 
 ### Install windows ISO
 
-Download `Windows.iso` on an installation media (e.g. USB) from the [Microsoft website](https://www.microsoft.com/en-us/software-download/windows10). You can either copy the ISO to your server using scp or download it directly via CLI using [Fido](https://github.com/pbatard/Fido).
+Download `Windows.iso` on an installation media (e.g. USB) from the [Windows 10 microsoft website](https://www.microsoft.com/en-us/software-download/windows10) or [Windows 11 microsoft website](https://www.microsoft.com/en-us/software-download/windows11). You can either copy the ISO to your server using scp or download it directly via CLI using [Fido](https://github.com/pbatard/Fido).
 
 ### Install virtio drivers  
   
@@ -175,7 +175,7 @@ spice://<server-ip>:5900
 spice://localhost:5900    # If the server has a GUI, it can connect to the installer from the same machine
 ```
 
-If you are making a remote connection, you will need to temporarily configure the KVM to listen for connections from elsewhere. run `virsh edit <guestname>` and change:
+If you are making a remote connection, you will need to temporarily configure the KVM to listen for connections outside of localhost. run `virsh edit <guestname>` and change:
 
 ```
     <graphics type='spice' autoport='yes'>
@@ -193,7 +193,7 @@ to
     </graphics>
 ```
 
-After the installation and another P2P or Remote Viewer has been set up, it can be changed back to not listen for connections outside of localhost. 
+After the installation and another Remote Viewer has been set up, it can be changed back to not listen for connections outside of localhost. 
 
 ### Install drivers in the KVM
 
@@ -210,7 +210,7 @@ Verify successful install by using task manager > performance and see your GPU l
 
 If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/). Setup guides for each one will not be covered here, but can be found on their respective websites. Applications may need to be installed as machine instead of user to allow connections from the login screen.
 
-Some of the options above provide fallback virtual displays, but if it does not work out of the box I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver).
+Some of the options above provide fallback virtual displays, but if it does not work out of the box I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver) for example.
 
 ### Tips
 
@@ -235,7 +235,7 @@ After installation, you can unmount the Windows.iso and virtio.iso by editing th
     </disk>
 ```
 
- Do not delete the mounted main disk, only the 2 mounted isos. If you do,  mount it again with `virsh attach-disk <guestname> /dev/cdrom /media/cdrom`.
+Do not delete the mounted main disk, only the 2 mounted isos. If you do, mount it again with `virsh attach-disk <guestname> /dev/cdrom /media/cdrom`.
 
 #### Set reboot signal to restart
 
@@ -292,11 +292,11 @@ The above configuration specifies 8 cores. Change it as needed.
 **Q: How do I fix error: `error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>`?**<br>
 A: Another KVM is using the GPU already. verify currently running KVMs with `virsh list --all`. To shutdown a KVM, use `virsh destroy <guestname>` and to remove it entirely use `virsh undefine <guestname>`.
 
-**Q: Why is the screen completely black when connecting with spice viewer but not with *x* remote viewer, or vice versa?**<br>
-A: Spice viewer (or your chosen remote viewer) may not recognise the virtual display, and therefore display a black screen instead. To circumvent this, when connecting and seeing the black screen, switch to the project windows menu `Windows key + P` and use arrow key down and press enter until the display appears. On parsec for example, you may want to switch projection type to *second screen only* (see why on question below) even if *PC screen only* is required for spice viewer to display the screen, as it does not recognise the virtual display driver.
+**Q: Why is the screen completely black when connecting with *x* remote viewer but not with *x* remote desktop, or vice versa?**<br>
+A: Remote viewers (like spice viewer) may not recognise the virtual display, and therefore display a black screen instead. To circumvent this, when connecting to the kvm and seeing the black screen, switch to the project windows menu `Windows key + P` and use arrow key down and press enter until the display appears. On parsec for example, you may want to switch projection type to *second screen only* (see why on question below) even if *PC screen only* is required for spice viewer to display the screen, as spice may not recognise the virtual display driver.
 
-**Q: Even with the virtual display installed, the remote view refresh rate only appears to be 1 hz?**"<br>
-A: You may not have set the projection `Windows key + P` to *second screen only*, making parsec use the basic display instead. In parsec, even if you have specified another hardware encoding type, you also get a warning of "host is using software encoding" when the basic display is used.
+**Q: Even with the virtual display installed, the remote desktop refresh rate only appears to be 1 hz?**"<br>
+A: You may not have set the projection `Windows key + P` to *second screen only*, making the remote desktop use the basic display instead (default software display). In parsec, even if you have specified another hardware encoding type, you also get a warning of "host is using software encoding" when the basic display is used.
 
 ## Additional resources
 

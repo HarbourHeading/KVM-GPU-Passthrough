@@ -298,6 +298,9 @@ A: Remote viewers (like spice viewer) may not recognise the virtual display, and
 **Q: Even with the virtual display installed, the remote desktop refresh rate only appears to be 1 hz?**"<br>
 A: You may not have set the projection `Windows key + P` to *second screen only*, making the remote desktop use the basic display instead (default software display). In parsec, even if you have specified another hardware encoding type, you also get a warning of "host is using software encoding" when the basic display is used.
 
+**Q: On the guest VM it shows I have available disk space, but it goes into pause state and shows full disk usage on the host?**<br>
+A: When files are written to and then deleted in the virtual disk, the space does not update on the host. You may need to use the command `virt-sparsify --in-place win10.qcow2`. Read more about it [here](https://balau82.wordpress.com/2011/05/08/qemu-raw-images-real-size/).
+
 ## Additional resources
 
 - [Libvirt documentation](https://ubuntu.com/server/docs/libvirt)

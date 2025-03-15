@@ -134,7 +134,7 @@ sudo update-initramfs -c -k $(uname -r)
 sudo reboot now
 ```
 
-Verify the GPU isolation by running:
+Verify the GPU isolation by running the applicable command:
 
 ```
 lspci -k | grep -E "vfio-pci|NVIDIA"
@@ -146,7 +146,7 @@ Kernel driver in use should now be listed as: `vfio-pci`. If not, you may need t
 
 ### Launch and configure the KVM
 
-We will setup and install the VM with virt-install. Tweak the example below as needed:
+We will setup and install the VM with [virt-install](https://manpages.org/virt-install). Tweak the example below as needed:
 ```
 sudo virt-install \
 --name=Windows10 \
@@ -172,7 +172,7 @@ Use a remote [Spice viewer](https://www.spice-space.org/download.html) with the 
 
 ```
 spice://<server-ip>:5900
-spice://localhost:5900    # If the server has a GUI, it can connect to the installer from the same machine
+spice://localhost:5900    # If the server has a graphical interface (desktop), it can connect to the installer from the same machine
 ```
 
 If you are making a remote connection, you will need to temporarily configure the KVM to listen for connections outside of localhost. run `virsh edit <guestname>` and change:
@@ -184,7 +184,7 @@ If you are making a remote connection, you will need to temporarily configure th
     </graphics>
 ```
 
-to
+to (also updating `passwd` to a unique password that you'll enter when connecting remotely with spice viewer)
 
 ```
     <graphics type='spice' autoport='yes' listen='0.0.0.0' passwd='securePassword1!'>
@@ -193,7 +193,7 @@ to
     </graphics>
 ```
 
-After the installation and another Remote Viewer has been set up, it can be changed back to not listen for connections outside of localhost. 
+After the installation and another Remote Desktop has been set up, it can be changed back to not listen for connections outside of localhost. 
 
 ### Install drivers in the KVM
 
@@ -235,7 +235,7 @@ After installation, you can unmount the Windows.iso and virtio.iso by editing th
     </disk>
 ```
 
-Do not delete the mounted main disk, only the 2 mounted isos. If you do, mount it again with `virsh attach-disk <guestname> /dev/cdrom /media/cdrom`.
+Do not delete the mounted main disk you'll be using for the VM, only the 2 mounted isos. If you do, mount it again with `virsh attach-disk <guestname> /dev/cdrom /media/cdrom`.
 
 #### Set reboot signal to restart
 
@@ -257,13 +257,28 @@ Change:
 <on_reboot>restart</on_reboot>
 ```
 
+#### Autostart VM on boot
+
+By default, the VM does not start on host boot. To change this behaviour, do:
+
+```
+virsh autostart <guestname>
+```
+
+If you wish to disable this feature at any point, do:
+
+```
+virsh autostart --disable <guestname>
+```
+
 ### Troubleshooting
 
 **Q: VM not running?**<br>
 A: Check if libvirtd is running: `sudo systemctl status libvirtd`. Look for any errors in logs if not.
 
 **Q: Nvidia GPU not isolated?**<br>
-A: Try adding `softdep nvidia pre: vfio-pci` under the options line in `/etc/modprobe.d/vfio.conf`.
+A: Try adding `softdep nvidia pre: vfio-pci` under the options line in `/etc/modprobe.d/vfio.conf`. If this doesn't work for you either,
+Read more on the [Arch wikis guide on GPU isolation](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Isolating_the_GPU).
 
 **Q: Windows VM only showing 1 logical processor being used?**<br>
 A: You may need to manually specify the cores in the VM configuration. To do so, do the following:
@@ -296,16 +311,17 @@ A: Another KVM is using the GPU already. verify currently running KVMs with `vir
 A: Remote viewers (like spice viewer) may not recognise the virtual display, and therefore display a black screen instead. To circumvent this, when connecting to the kvm and seeing the black screen, switch to the project windows menu `Windows key + P` and use arrow key down and press enter until the display appears. On parsec for example, you may want to switch projection type to *second screen only* (see why on question below) even if *PC screen only* is required for spice viewer to display the screen, as spice may not recognise the virtual display driver.
 
 **Q: Even with the virtual display installed, the remote desktop refresh rate only appears to be 1 hz?**"<br>
-A: You may not have set the projection `Windows key + P` to *second screen only*, making the remote desktop use the basic display instead (default software display). In parsec, even if you have specified another hardware encoding type, you also get a warning of "host is using software encoding" when the basic display is used.
+A: You may not have set the projection `Windows key + P` to *second screen only*, making the remote desktop use the basic display instead (default software display). In parsec, even if you have specified another encoding type (e.g. hardware encoding), you get a warning of "host is using software encoding" when the basic display is used.
 
 **Q: On the guest VM it shows I have available disk space, but it goes into pause state and shows full disk usage on the host?**<br>
-A: When files are written to and then deleted in the virtual disk, the space does not update on the host. You may need to use the command `virt-sparsify --in-place win10.qcow2`. Read more about it [here](https://balau82.wordpress.com/2011/05/08/qemu-raw-images-real-size/).
+A: When files are written to and then deleted in the virtual disk, the space does not update on the host. You may need to use the command `virt-sparsify --in-place Windows10.qcow2`. Read more about it [here](https://balau82.wordpress.com/2011/05/08/qemu-raw-images-real-size/).
 
 ## Additional resources
 
 - [Libvirt documentation](https://ubuntu.com/server/docs/libvirt)
 - [Looking Glass installation](https://looking-glass.io/docs/B6/install/)
-- [KVM installation in Ubuntu 22.04 GUI](https://www.youtube.com/watch?v=vyLNpPY-Je0)
+- [Arch Wiki: PCI passthrough via OVMF](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF)
+- [KVM installation with Ubuntu 22.04 GUI](https://www.youtube.com/watch?v=vyLNpPY-Je0)
 
 ## Contributions
 

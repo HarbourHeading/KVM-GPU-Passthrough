@@ -309,6 +309,7 @@ A: Another KVM is using the GPU already. verify currently running KVMs with `vir
 
 **Q: Why is the screen completely black when connecting with *x* remote viewer but not with *x* remote desktop, or vice versa?**<br>
 A: Remote viewers (like spice viewer) may not recognise the virtual display, and therefore display a black screen instead. To circumvent this, when connecting to the kvm and seeing the black screen, switch to the project windows menu `Windows key + P` and use arrow key down and press enter until the display appears. On parsec for example, you may want to switch projection type to *second screen only* (see why on question below) even if *PC screen only* is required for spice viewer to display the screen, as spice may not recognise the virtual display driver.
+
 **NOTE:** In windows 10, you can do this from the login screen. However, for completely unfathomable reasons, changing projection is blocked from the login screen in windows 11. Therefore, you need to press Enter, type your password and then assume you've logged in and press Ctrl + P a bunch.
 
 **Q: Even with the virtual display installed, the remote desktop refresh rate only appears to be 1 hz?**"<br>
@@ -316,6 +317,9 @@ A: You may not have set the projection `Windows key + P` to *second screen only*
 
 **Q: On the guest VM it shows I have available disk space, but it goes into pause state and shows full disk usage on the host?**<br>
 A: When files are written to and then deleted in the virtual disk, the space does not update on the host. You may need to use the command `virt-sparsify --in-place Windows10.qcow2`. Read more about it [here](https://balau82.wordpress.com/2011/05/08/qemu-raw-images-real-size/).
+
+**Q: VM runs super slow and shows high CPU usage (~70%) as if it only had 1 core?**<br>
+A: I found when I turned on **Core isolation -> memory integrity**, the windows 11 VM ran incredibly slow - as if it only had a single core. Turning it off made it go from ~70% average CPU usage to ~2% average CPU usage while idle. A [VMWare article on windows VM performance](https://www.switchfirewall.com/2025/03/vmware-performance-issues-on-windows11.html) mentions this as a valid solution and seems to be a common issue across windows virtualisation.
 
 ## Additional resources
 

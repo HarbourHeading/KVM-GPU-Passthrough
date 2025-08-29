@@ -6,22 +6,33 @@ This guide explains how to set up a headless Windows 10/11 VM on QEMU/KVM with f
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
-   - [Is virtualization supported?](#is-virtualization-supported)
+   * [Is virtualization supported?](#is-virtualization-supported)
 - [Installation](#installation)
-   - [Install windows ISO](#install-windows-iso)
-   - [Install virtio Drivers](#install-virtio-drivers)
-   - [Install required packages](#install-required-packages)
-- [Getting Started](#getting-started)
-   - [Set up the GPU](#set-up-the-gpu)
-   - [Isolate the GPU](#isolate-the-gpu)
-   - [Launch and configure the KVM](#launch-and-configure-the-kvm)
-   - [Install drivers in the KVM](#install-drivers-in-the-kvm)
-   - [Set up remote desktop (optional)](#set-up-remote-desktop-optional)
-- [Tips](#tips)
-   - [Unmount installation disks](unmount-installation-disks)
-   - [Set reboot signal to restart](set-reboot-signal-to-restart)
-- [Troubleshooting](#troubleshooting)
+   * [Install windows ISO](#install-windows-iso)
+   * [Install virtio drivers  ](#install-virtio-drivers)
+   * [Install required packages](#install-required-packages)
+- [Getting started](#getting-started)
+   * [Set up the GPU](#set-up-the-gpu)
+   * [Isolate the GPU](#isolate-the-gpu)
+   * [Launch and configure the KVM](#launch-and-configure-the-kvm)
+   * [Install drivers in the KVM](#install-drivers-in-the-kvm)
+   * [Set up remote desktop (optional)](#set-up-remote-desktop-optional)
+   * [Tips](#tips)
+      + [Unmount installation disks](#unmount-installation-disks)
+      + [Set reboot signal to restart](#set-reboot-signal-to-restart)
+      + [Autostart VM on boot](#autostart-vm-on-boot)
+   * [Troubleshooting](#troubleshooting)
+      + [VM not running](#vm-not-running)
+      + [Nvidia GPU not isolated](#nvidia-gpu-not-isolated)
+      + [Windows VM only showing 1 logical processor being used](#windows-vm-only-showing-1-logical-processor-being-used)
+      + [How do I fix error: `error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>`](#how-do-i-fix-error-error-requested-operation-is-not-valid-pci-device-000001000-is-in-use-by-driver-qemu-domain-guestname)
+      + [Why is the screen completely black when connecting with *x* remote viewer but not with *x* remote desktop, or vice versa](#why-is-the-screen-completely-black-when-connecting-with-x-remote-viewer-but-not-with-x-remote-desktop-or-vice-versa)
+      + [Even with the virtual display installed, the remote desktop refresh rate only appears to be 1 hz](#even-with-the-virtual-display-installed-the-remote-desktop-refresh-rate-only-appears-to-be-1-hz)
+      + [On the guest VM it shows I have available disk space, but it goes into pause state and shows full disk usage on the host](#on-the-guest-vm-it-shows-i-have-available-disk-space-but-it-goes-into-pause-state-and-shows-full-disk-usage-on-the-host)
+      + [VM runs super slow and shows high CPU usage (~70%) as if it only had 1 core](#vm-runs-super-slow-and-shows-high-cpu-usage-70-as-if-it-only-had-1-core)
 - [Additional resources](#additional-resources)
+- [Contributions](#contributions)
+
 
 ## Prerequisites
 
@@ -273,15 +284,15 @@ virsh autostart --disable <guestname>
 
 ### Troubleshooting
 
-**Q: VM not running?**<br>
-A: Check if libvirtd is running: `sudo systemctl status libvirtd`. Look for any errors in logs if not.
+#### VM not running
+Check if libvirtd is running: `sudo systemctl status libvirtd`. Look for any errors in logs if not.
 
-**Q: Nvidia GPU not isolated?**<br>
-A: Try adding `softdep nvidia pre: vfio-pci` under the options line in `/etc/modprobe.d/vfio.conf`. If this doesn't work for you either,
+#### Nvidia GPU not isolated
+Try adding `softdep nvidia pre: vfio-pci` under the options line in `/etc/modprobe.d/vfio.conf`. If this doesn't work for you either,
 Read more on the [Arch wikis guide on GPU isolation](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Isolating_the_GPU).
 
-**Q: Windows VM only showing 1 logical processor being used?**<br>
-A: You may need to manually specify the cores in the VM configuration. To do so, do the following:
+#### Windows VM only showing 1 logical processor being used
+You may need to manually specify the cores in the VM configuration. To do so, do the following:
      Enter your server CLI. Turn off the VM before editing it with `virsh destroy <guestname>`.
      Then, edit it with `virsh edit <guestname>` to include:
      
@@ -304,22 +315,22 @@ A: You may need to manually specify the cores in the VM configuration. To do so,
  
 The above configuration specifies 8 cores. Change it as needed.
  
-**Q: How do I fix error: `error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>`?**<br>
-A: Another KVM is using the GPU already. verify currently running KVMs with `virsh list --all`. To shutdown a KVM, use `virsh destroy <guestname>` and to remove it entirely use `virsh undefine <guestname>`.
+#### How do I fix error: `error: Requested operation is not valid: PCI device 0000:01:00.0 is in use by driver QEMU, domain <guestname>`
+Another KVM is using the GPU already. verify currently running KVMs with `virsh list --all`. To shutdown a KVM, use `virsh destroy <guestname>` and to remove it entirely use `virsh undefine <guestname>`.
 
-**Q: Why is the screen completely black when connecting with *x* remote viewer but not with *x* remote desktop, or vice versa?**<br>
-A: Remote viewers (like spice viewer) may not recognise the virtual display, and therefore display a black screen instead. To circumvent this, when connecting to the kvm and seeing the black screen, switch to the project windows menu `Windows key + P` and use arrow key down and press enter until the display appears. On parsec for example, you may want to switch projection type to *second screen only* (see why on question below) even if *PC screen only* is required for spice viewer to display the screen, as spice may not recognise the virtual display driver.
+#### Why is the screen completely black when connecting with *x* remote viewer but not with *x* remote desktop, or vice versa
+Remote viewers (like spice viewer) may not recognise the virtual display, and therefore display a black screen instead. To circumvent this, when connecting to the kvm and seeing the black screen, switch to the project windows menu `Windows key + P` and use arrow key down and press enter until the display appears. On parsec for example, you may want to switch projection type to *second screen only* (see why on question below) even if *PC screen only* is required for spice viewer to display the screen, as spice may not recognise the virtual display driver.
 
 **NOTE:** In windows 10, you can do this from the login screen. However - for completely unfathomable reasons - **changing projection is blocked from the login screen in windows 11**. Therefore, you need to press Enter, type your password and then assume you've logged in and press `Windows key + P` a bunch, or through exact arrow + enter key presses.
 
-**Q: Even with the virtual display installed, the remote desktop refresh rate only appears to be 1 hz?**"<br>
-A: You may not have set the projection `Windows key + P` to *second screen only*, making the remote desktop use the basic display instead (default software display). In parsec, even if you have specified another encoding type (e.g. hardware encoding), you get a warning of "host is using software encoding" when the basic display is used.
+#### Even with the virtual display installed, the remote desktop refresh rate only appears to be 1 hz
+You may not have set the projection `Windows key + P` to *second screen only*, making the remote desktop use the basic display instead (default software display). In parsec, even if you have specified another encoding type (e.g. hardware encoding), you get a warning of "host is using software encoding" when the basic display is used.
 
-**Q: On the guest VM it shows I have available disk space, but it goes into pause state and shows full disk usage on the host?**<br>
-A: When files are written to and then deleted in the virtual disk, the space does not update on the host. You may need to use the command `virt-sparsify --in-place Windows10.qcow2`. Read more about it [here](https://balau82.wordpress.com/2011/05/08/qemu-raw-images-real-size/).
+#### On the guest VM it shows I have available disk space, but it goes into pause state and shows full disk usage on the host
+When files are written to and then deleted in the virtual disk, the space does not update on the host. You may need to use the command `virt-sparsify --in-place Windows10.qcow2`. Read more about it [here](https://balau82.wordpress.com/2011/05/08/qemu-raw-images-real-size/).
 
-**Q: VM runs super slow and shows high CPU usage (~70%) as if it only had 1 core?**<br>
-A: I found when I turned on **Core isolation -> memory integrity**, the windows 11 VM ran incredibly slow - as if it only had a single core. Turning it off made it go from ~70% average CPU usage to ~2% average CPU usage while idle. A [VMWare article on windows VM performance](https://www.switchfirewall.com/2025/03/vmware-performance-issues-on-windows11.html) mentions this as a valid solution and seems to be a common issue across windows virtualisation.
+#### VM runs super slow and shows high CPU usage (~70%) as if it only had 1 core
+I found when I turned on **Core isolation -> memory integrity**, the windows 11 VM ran incredibly slow - as if it only had a single core. Turning it off made it go from ~70% average CPU usage to ~2% average CPU usage while idle. A [VMWare article on windows VM performance](https://www.switchfirewall.com/2025/03/vmware-performance-issues-on-windows11.html) mentions this as a valid solution and seems to be a common issue across windows virtualisation.
 
 ## Additional resources
 

@@ -17,10 +17,11 @@ This guide explains how to set up a headless Windows 10/11 VM on QEMU/KVM with f
    * [Launch and configure the KVM](#launch-and-configure-the-kvm)
    * [Install drivers in the KVM](#install-drivers-in-the-kvm)
    * [Set up remote desktop (optional)](#set-up-remote-desktop-optional)
-   * [Tips](#tips)
+   * [Post install tips](#post-install-tips)
       + [Unmount installation disks](#unmount-installation-disks)
       + [Set reboot signal to restart](#set-reboot-signal-to-restart)
       + [Autostart VM on boot](#autostart-vm-on-boot)
+      + [Turn off suggestions which later blocks remote viewer from starting](#turn-off-suggestions-which-later-blocks-remote-viewer-from-starting)
    * [Troubleshooting](#troubleshooting)
       + [VM not running](#vm-not-running)
       + [Nvidia GPU not isolated](#nvidia-gpu-not-isolated)
@@ -223,7 +224,7 @@ If you are running a headless system and want low-latency, you can use a remote 
 
 Some of the options above provide fallback virtual displays, but if it does not work out of the box I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver) for example.
 
-### Tips
+### Post install tips
 
 #### Unmount installation disks
 
@@ -281,6 +282,10 @@ If you wish to disable this feature at any point, do:
 ```
 virsh autostart --disable <guestname>
 ```
+
+#### Turn off suggestions which later blocks remote viewer from starting
+On windows, if you use [oobe\bypassnro](https://learn.microsoft.com/en-us/answers/questions/2350856/set-up-windows-11-without-internet-oobebypassnro) (not requiring sign-in with an outlook account) Windows will eventually (after a few months) block all your applications (including remote desktops like parsec) from starting, and display a "finish setting up device" pop up multiple times. Instead of waiting for the inevitable and having to debug the issue, disable these suggestions before they come by going to Settings -> System -> Notifications -> Additional Settings then disable all 3 of the checkboxes.
+
 
 ### Troubleshooting
 

@@ -2,7 +2,7 @@
 
 This guide explains how to set up a headless Windows 10/11 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. I did not find many guides on the topic, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users. Although it has only been tested on Ubuntu Server 24.04, the steps should remain largely the same for older versions, e.g. 22.04 and 20.04.
 
-**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended. Guide was originally made for Windows 10, but can be performed with minimal changes (difference being the iso) in Windows 11. For clarity, tools like spice viewer is referred to as a remote viewer, while apps like parsec and looking glass are referred to as remote desktops.
+**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended. Guide was originally made for Windows 10, but can be performed with minimal changes (difference being the iso and some minor documented knickknacks) in Windows 11. For clarity, tools like spice viewer is referred to as a remote viewer, while software applications like parsec and looking glass are referred to as remote desktops.
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
@@ -207,12 +207,13 @@ to (also updating `passwd` to a unique password that you'll enter when connectin
 
 After the installation and another Remote Desktop has been set up, it can be changed back to not listen for connections outside of localhost. 
 
+Now it is assume you have connected to the windows install using spice viewer or equivalent. A personal tip is to utilize microsofts [oobe\bypassnro](https://learn.microsoft.com/en-us/answers/questions/2350856/set-up-windows-11-without-internet-oobebypassnro) tooling/command to create a windows machine without tying it to an outlook account. **OBS**: It is strongly recommended you follow [tips, turning off suggestions](#turn-off-suggestions-which-later-blocks-remote-viewer-from-starting) if you do this.
+
 ### Install drivers in the KVM
 
 Open the drive with the virtio drivers and open the Guests tools installation (screenshot below) and follow the steps.
 
 ![install-virtio-tools](https://github.com/user-attachments/assets/2f55433f-9246-477f-85b3-346e7d840596)
-
 
 Install your graphics card drivers: [Nvidia](https://www.nvidia.com/en-us/geforce/drivers/), [AMD](https://www.amd.com/en/support/download/drivers.html) or [Intel](https://www.intel.com/content/www/us/en/download-center/home.html).
 
@@ -220,7 +221,7 @@ Verify successful install by using task manager > performance and see your GPU l
 
 ### Set up remote desktop (optional)
 
-If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/). Setup guides for each one will not be covered here, but can be found on their respective websites. Applications may need to be installed as machine instead of user to allow connections from the login screen.
+If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/). Setup guides for each one will not be covered here, but can be found on their respective websites. **OBS**: Applications will need to be installed as machine instead of user to allow connections right from the login screen.
 
 Some of the options above provide fallback virtual displays, but if it does not work out of the box I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver) for example.
 

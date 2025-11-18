@@ -1,8 +1,8 @@
 # Create KVM with Full GPU and CPU Passthrough
 
-This guide explains how to set up a headless Windows 10/11 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. I did not find many guides on the topic, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users. Although it has only been tested on Ubuntu Server 24.04, the steps should remain largely the same for older versions, e.g. 22.04 and 20.04.
+This guide explains how to set up a headless Windows 10/11 VM on QEMU/KVM with full GPU and CPU passthrough on an Ubuntu 24.04 server. I did not find many guides on the topic, so I wanted to share how I accomplished it in a straightforward way. Steps can be followed by Nvidia, AMD and Intel users (for transparency, I've only tested on NVIDIA and AMD GPUs). Although it has only been tested on Ubuntu Server 24.04, the steps should remain largely the same for older versions e.g. 22.04 and 20.04.
 
-**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended. Guide was originally made for Windows 10, but can be performed with minimal changes (difference being the iso and some minor documented knickknacks) in Windows 11. For clarity, tools like spice viewer is referred to as a remote viewer, while software applications like parsec and looking glass are referred to as remote desktops.
+**Note:** This guide isolates the GPU from the Ubuntu host for security reasons. The GPU isolation step can be skipped, however it is strongly recommended. Guide was originally made for Windows 10, but can be performed with minimal changes (difference being the iso and some minor documented knickknacks) in Windows 11. For clarity, tools like spice viewer is referred to as a remote viewer, while software applications like parsec and sunshine/moonlight are referred to as remote desktops.
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
@@ -31,6 +31,7 @@ This guide explains how to set up a headless Windows 10/11 VM on QEMU/KVM with f
       + [Even with the virtual display installed, the remote desktop refresh rate only appears to be 1 hz](#even-with-the-virtual-display-installed-the-remote-desktop-refresh-rate-only-appears-to-be-1-hz)
       + [On the guest VM it shows I have available disk space, but it goes into pause state and shows full disk usage on the host](#on-the-guest-vm-it-shows-i-have-available-disk-space-but-it-goes-into-pause-state-and-shows-full-disk-usage-on-the-host)
       + [VM runs super slow and shows high CPU usage (~70%) as if it only had 1 core](#vm-runs-super-slow-and-shows-high-cpu-usage-70-as-if-it-only-had-1-core)
+      + [Cannot see mouse in windows 11 VM](#cannot-see-mouse-in-windows-11)
 - [Additional resources](#additional-resources)
 - [Contributions](#contributions)
 
@@ -207,7 +208,7 @@ to (also updating `passwd` to a unique password that you'll enter when connectin
 
 After the installation and another Remote Desktop has been set up, it can be changed back to not listen for connections outside of localhost. 
 
-Now it is assume you have connected to the windows install using spice viewer or equivalent. A personal tip is to utilize microsofts [oobe\bypassnro](https://learn.microsoft.com/en-us/answers/questions/2350856/set-up-windows-11-without-internet-oobebypassnro) tooling/command to create a windows machine without tying it to an outlook account. **OBS**: It is strongly recommended you follow [tips, turning off suggestions](#turn-off-suggestions-which-later-blocks-remote-viewer-from-starting) if you do this.
+Now it is assume you have connected to the windows install using spice viewer or equivalent graphical viewer. A personal tip is to utilize microsofts ~~[oobe\bypassnro](https://learn.microsoft.com/en-us/answers/questions/2350856/set-up-windows-11-without-internet-oobebypassnro) tooling/command~~ Microsoft disabled using oobe\bypassnro. For alternative methods, see for example [article](https://pureinfotech.com/bypass-microsoft-account-setup-windows-11/#bypass_msa_oobe_registgry) where I tested the first method (registry edit) which worked fine, to create a windows machine without tying it to an outlook account. **OBS**: It is strongly recommended you later follow [tips, turning off suggestions](#turn-off-suggestions-which-later-blocks-remote-viewer-from-starting) if you do this.
 
 ### Install drivers in the KVM
 
@@ -221,9 +222,9 @@ Verify successful install by using task manager > performance and see your GPU l
 
 ### Set up remote desktop (optional)
 
-If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/). Setup guides for each one will not be covered here, but can be found on their respective websites. **OBS**: Applications will need to be installed as machine instead of user to allow connections right from the login screen.
+If you are running a headless system and want low-latency, you can use a remote desktop viewer like [Sunshine](https://docs.lizardbyte.dev/projects/sunshine/latest/md_docs_2getting__started.html)/[Moonlight QT](https://github.com/moonlight-stream/moonlight-qt), [Parsec](https://parsec.app/) or [Looking Glass](https://looking-glass.io/). Having tried both Sunshine (server-side) with Moonlight (client) and parsec, I believe Parsec is a out-of-box (easier) setup, but still requires an internet connection as parsec handles authentication between hosts. Moonlight on the other hand is more complex, but is fully local from authentication to usage. Both use a local connection once established, so the latency difference is in the milliseconds. Setup guides for each one will not be covered here, but can be found on their respective websites. **OBS**: Applications will need to be installed as machine instead of user to allow connections right from the login screen. Most of them ask whether to install on a "user" level or "machine" level in their setup.
 
-Some of the options above provide fallback virtual displays, but if it does not work out of the box I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver) for example.
+Some of the options above provide fallback virtual displays, but if it does not work out of the box (e.g. parsec) I recommend either buying a HDMI dummy plug or installing and setting up a virtual display driver. For installation instructions, refer to [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver) for example.
 
 ### Post install tips
 
@@ -285,7 +286,7 @@ virsh autostart --disable <guestname>
 ```
 
 #### Turn off suggestions which later blocks remote viewer from starting
-On windows, if you use [oobe\bypassnro](https://learn.microsoft.com/en-us/answers/questions/2350856/set-up-windows-11-without-internet-oobebypassnro) (not requiring sign-in with an outlook account) Windows will eventually (after a few months) block all your applications (including remote desktops like parsec) from starting, and display a "finish setting up device" pop up multiple times. Instead of waiting for the inevitable and having to debug the issue, disable these suggestions before they come by going to Settings -> System -> Notifications -> Additional Settings then disable all 3 of the checkboxes.
+On windows, if you use ~~[oobe\bypassnro](https://learn.microsoft.com/en-us/answers/questions/2350856/set-up-windows-11-without-internet-oobebypassnro)~~ Disabled. See for example [article](https://pureinfotech.com/bypass-microsoft-account-setup-windows-11/#bypass_msa_oobe_registgry) (not requiring sign-in with an outlook account) Windows will eventually (after a few months) block all your software applications (including remote desktops like parsec) from starting, and display a "finish setting up device" pop up multiple times. Instead of waiting for the inevitable and having to debug the issue, disable these suggestions before they come by going to Settings -> System -> Notifications -> Additional Settings then disable all 3 of the checkboxes.
 
 
 ### Troubleshooting
@@ -337,6 +338,11 @@ When files are written to and then deleted in the virtual disk, the space does n
 
 #### VM runs super slow and shows high CPU usage (~70%) as if it only had 1 core
 I found when I turned on **Core isolation -> memory integrity**, the windows 11 VM ran incredibly slow - as if it only had a single core. Turning it off made it go from ~70% average CPU usage to ~2% average CPU usage while idle. A [VMWare article on windows VM performance](https://www.switchfirewall.com/2025/03/vmware-performance-issues-on-windows11.html) mentions this as a valid solution and seems to be a common issue across windows virtualisation.
+
+#### Cannot see mouse in Windows 11
+For transparency, I only saw this issue when connecting through parsec from a linux client to a Windows 11 host that was NOT a VM, that did not have a physical mouse connected. I imagine the VirtIO agent installs the necessary tools for a virtual mouse, but I'll mention the issue/solution here just in case.
+
+In this case, you need to go to "Settings > Accessibility > Mouse > Mouse keys" and turn it on. Now the mouse should work as intended (or after restart) without having to install any third-party drivers which is nice.
 
 ## Additional resources
 
